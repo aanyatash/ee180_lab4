@@ -39,13 +39,16 @@ assign      row3                                = srow2sacc_row3_data;
 // Output generation
 assign      sacc2swt_write_data                 = sobel_out;
 
-
 /* *** *** *** YOUR CODE GOES BELOW THIS LINE *** *** *** */
 
 // *** Extra signal declarations ***
 // If you need any extra signals to help with the convolution, declare them here. Otherwise, you may remove these comments.
 // Note that you will need to use "reg" (not "wire") for any signals written to inside the "always" block.
-
+reg [12:0] overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
+reg [12:0] overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
+reg [12:0] abs_overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
+reg [12:0] abs_overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
+reg [12:0] overflow_sobel[`NUM_SOBEL_ACCELERATORS-1:0]; 
 
 
 // *** Sobel convolution implementation ***
@@ -66,34 +69,39 @@ generate
             // *** Calculation of the horizontal Sobel convolution ***
             // Each "convx" value corresponds to an input to that calculation, a different pixel in the 9-by-9 grid.
             // These values must be combined in a way that faithfully implements the Sobel convolution algorithm.
-            convx11[c] = { 4'b0, row1[(c+3)*8-1:(c+2)*8]       };
-            convx12[c] = { 3'b0, row1[(c+2)*8-1:(c+1)*8], 1'b0 };             // this value is being multiplied by 2
-            convx13[c] = { 4'b0, row1[(c+1)*8-1:c*8]           };
-            convx31[c] = { 4'b0, row3[(c+3)*8-1:(c+2)*8]       };
-            convx32[c] = { 3'b0, row3[(c+2)*8-1:(c+1)*8], 1'b0 };             // this value is being multiplied by 2
-            convx33[c] = { 4'b0, row3[(c+1)*8-1:c*8]           };
+            convx11[c] = { 4'b0, row1[(c+3)*8-1:(c+2)*8]       }; // i - 1, j + 1
+            convx12[c] = { 3'b0, row1[(c+2)*8-1:(c+1)*8], 1'b0 }; // i - 1, j this value is being multiplied by 2
+            convx13[c] = { 4'b0, row1[(c+1)*8-1:c*8]           }; // i - 1, j - 1
+            convx31[c] = { 4'b0, row3[(c+3)*8-1:(c+2)*8]       }; // i + 1, j + 1
+            convx32[c] = { 3'b0, row3[(c+2)*8-1:(c+1)*8], 1'b0 }; // i + 1, j, this value is being multiplied by 2
+            convx33[c] = { 4'b0, row3[(c+1)*8-1:c*8]           }; // i + 1, j - 1
             
             // Combine the values above in a way that faithfully implements Sobel.
             // You may declare more signals as needed.
-            convx[c]   = 'h0; 
+            overflow_x[c] = convx13[c] - convx33[c] + convx12[c] - convx32[c] + convx11[c] - convx31[c];
+            abs_overflow_x[c] = overflow_x[c][12] ? -overflow_x[c] : overflow_x[c];
+            convx[c]   = (abs_overflow_x[c] > 255) ? 255 : abs_overflow_x[c][11:0];
             
             // *** Calculation of the vertical Sobel convolution ***
             // Each "convy" value corresponds to an input to that calculation, a different pixel in the 9-by-9 grid.
             // These values must be combined in a way that faithfully implements the Sobel convolution algorithm.
-            convy11[c] = { 4'b0, row1[(c+3)*8-1:(c+2)*8]       };
-            convy13[c] = { 4'b0, row1[(c+1)*8-1:c*8]           };
-            convy21[c] = { 3'b0, row2[(c+3)*8-1:(c+2)*8], 1'b0 };             // this value is being multiplied by 2
-            convy23[c] = { 3'b0, row2[(c+1)*8-1:c*8],     1'b0 };             // this value is being multiplied by 2
-            convy31[c] = { 4'b0, row3[(c+3)*8-1:(c+2)*8]       };
-            convy33[c] = { 4'b0, row3[(c+1)*8-1:c*8]           };
+            convy11[c] = { 4'b0, row1[(c+3)*8-1:(c+2)*8]       }; // i - 1, j + 1
+            convy13[c] = { 4'b0, row1[(c+1)*8-1:c*8]           }; // i - 1, j - 1
+            convy21[c] = { 3'b0, row2[(c+3)*8-1:(c+2)*8], 1'b0 }; // i, j + 1, this value is being multiplied by 2
+            convy23[c] = { 3'b0, row2[(c+1)*8-1:c*8],     1'b0 }; // i, j - 1, this value is being multiplied by 2
+            convy31[c] = { 4'b0, row3[(c+3)*8-1:(c+2)*8]       }; // i + 1, j + 1
+            convy33[c] = { 4'b0, row3[(c+1)*8-1:c*8]           }; // i + 1, j - 1
             
             // Combine the values above in a way that faithfully implements Sobel.
             // You may declare more signals as needed.
-            convy[c]   = 'h0;
+            overflow_y[c] = convy13[c] - convy11[c] + convy23[c] - convy21[c] + convy33[c] - convy31[c];
+            abs_overflow_y[c] = overflow_y[c][12] ? -overflow_y[c] : overflow_y[c];
+            convy[c]   = (abs_overflow_y[c] > 255) ? 255 : abs_overflow_y[c][11:0];
             
             // *** Calculation of the overall Sobel convolution result ***
             // The horizontal and vertical convolutions must be combined in a way that faithfully implements the Sobel convolution algorithm.
-            sobel_sum[c] = 'h0;
+            overflow_sobel[c] = (convx[c] + convy[c]) > 255 ? 255 : (convx[c] + convy[c]);
+            sobel_sum[c] = overflow_sobel[c][11:0];
             
             // *** Writing out the Sobel convolution result ***
             // This line should place the output of the Sobel convolution (the lines above) into the correct location in the output byte vector.
