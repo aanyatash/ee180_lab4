@@ -220,7 +220,7 @@ always @ (*) begin
             if (go) begin
                 // *** Calculation state ***
                 // Insert your state transition code here.
-                state_next                      = (row_counter == control_n_rows - 2) ? STATE_PROCESSING_LOADSS_LAST : STATE_PROCESSING_LOADSS; // ONLY IF NOT AT LAST ROW
+                state_next                      = (row_counter == control_n_rows - 3) ? STATE_PROCESSING_LOADSS_LAST : STATE_PROCESSING_LOADSS; // ONLY IF NOT AT LAST ROW
             end
         end
         
