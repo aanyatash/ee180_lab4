@@ -584,7 +584,7 @@ always @ (*) begin
         
         STATE_LOADING_3: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_write_offset_next               = buf_write_offset + buf_write_row_incr;
+            buf_write_offset_next               = col_strip;
         end
         
         STATE_PROCESSING_CALC: begin
