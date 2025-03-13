@@ -44,10 +44,10 @@ assign      sacc2swt_write_data                 = sobel_out;
 // *** Extra signal declarations ***
 // If you need any extra signals to help with the convolution, declare them here. Otherwise, you may remove these comments.
 // Note that you will need to use "reg" (not "wire") for any signals written to inside the "always" block.
-reg [12:0] overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
-reg [12:0] overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
-reg [12:0] abs_overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
-reg [12:0] abs_overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
+reg signed [12:0] overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
+reg signed [12:0] overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
+reg signed [12:0] abs_overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
+reg signed [12:0] abs_overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
 reg [12:0] overflow_sobel[`NUM_SOBEL_ACCELERATORS-1:0]; 
 
 

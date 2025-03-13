@@ -167,7 +167,7 @@ for (i = 0; i < `NUM_SOBEL_ACCELERATORS; i = i + 1) begin: sobel_write_en
 // *** Write enable ***
 // If pixel_write_en[i] is set to 1, this tells the memory system that the current pixel at index i from the Sobel accelerator contains valid data to be written.
 // Make sure to only set it to 1 when the Sobel accelerator is producing valid data at that pixel position.
-assign      pixel_write_en[i]                   = 'h0;
+assign      pixel_write_en[i]                   = buf_write_en;
 
 end
 endgenerate
@@ -488,14 +488,14 @@ end
 // Insert your code where indicated.
 always @ (*) begin
     // What is the correct default behavior? Place your code here.
-    buf_read_offset_next                        = 'h0;
+    buf_read_offset_next                        = buf_read_offset;
     
     case (state)
         STATE_WAIT: begin
             if (go) begin
                 // Once the control signal is asserted, does something need to happen?
                 // Think about what the next state is going to be and what data the accelerator expects to get.
-                buf_read_offset_next            = 'h0;
+                buf_read_offset_next            = buf_read_offset + control_n_cols;
             end else begin
                 // If there is no control signal, just read from the beginning of the image.
                 // This part is provided for you.
@@ -505,37 +505,37 @@ always @ (*) begin
         
         STATE_LOADING_1: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_read_offset_next                = 'h0;
+            buf_read_offset_next                = buf_read_offset + control_n_cols;
         end
         
         STATE_LOADING_2: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_read_offset_next                = 'h0;
+            buf_read_offset_next                = buf_read_offset;
         end
         
         STATE_LOADING_3: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_read_offset_next                = 'h0;
+            buf_read_offset_next                = buf_read_offset + control_n_cols;
         end
         
         STATE_PROCESSING_CALC: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_read_offset_next                = 'h0;
+            buf_read_offset_next                = buf_read_offset;
         end
         
         STATE_PROCESSING_LOADSS: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_read_offset_next                = 'h0;
+            buf_read_offset_next                = buf_read_offset + control_n_cols;
         end
         
         STATE_PROCESSING_CALC_LAST: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_read_offset_next                = 'h0;
+            buf_read_offset_next                = buf_read_offset + control_n_cols;
         end
         
         STATE_PROCESSING_LOADSS_LAST: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_read_offset_next                = 'h0;
+            buf_read_offset_next                = next_col_strip;
         end
         
         STATE_PROCESSING_DONE: begin
@@ -550,7 +550,7 @@ always @ (*) begin
         
         default: begin
             // What happens in the default (unexpected) case? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_read_offset_next                = 'h0;
+            buf_read_offset_next                = buf_read_offset;
         end
     endcase
 end
@@ -574,37 +574,37 @@ always @ (*) begin
         
         STATE_LOADING_1: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_write_offset_next               = 'h0;
+            buf_write_offset_next               = buf_write_offset;
         end
         
         STATE_LOADING_2: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_write_offset_next               = 'h0;
+            buf_write_offset_next               = buf_write_offset;
         end
         
         STATE_LOADING_3: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_write_offset_next               = 'h0;
+            buf_write_offset_next               = buf_write_offset + buf_write_row_incr;
         end
         
         STATE_PROCESSING_CALC: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_write_offset_next               = 'h0;
+            buf_write_offset_next               = buf_write_offset;
         end
         
         STATE_PROCESSING_LOADSS: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_write_offset_next               = 'h0;
+            buf_write_offset_next               = buf_write_offset + buf_write_row_incr;
         end
         
         STATE_PROCESSING_CALC_LAST: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_write_offset_next               = 'h0;
+            buf_write_offset_next               = buf_write_offset;
         end
         
         STATE_PROCESSING_LOADSS_LAST: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            buf_write_offset_next               = 'h0;
+            buf_write_offset_next               = buf_write_offset + buf_write_row_incr;
         end
         
         STATE_PROCESSING_DONE: begin
