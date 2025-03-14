@@ -44,10 +44,10 @@ assign      sacc2swt_write_data                 = sobel_out;
 // *** Extra signal declarations ***
 // If you need any extra signals to help with the convolution, declare them here. Otherwise, you may remove these comments.
 // Note that you will need to use "reg" (not "wire") for any signals written to inside the "always" block.
-reg signed [12:0] overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
-reg signed [12:0] overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
-reg signed [12:0] abs_overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
-reg signed [12:0] abs_overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
+reg [12:0] overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
+reg [12:0] overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
+reg [12:0] abs_overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
+reg [12:0] abs_overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
 reg [12:0] overflow_sobel[`NUM_SOBEL_ACCELERATORS-1:0]; 
 
 
@@ -79,7 +79,7 @@ generate
             // Combine the values above in a way that faithfully implements Sobel.
             // You may declare more signals as needed.
             overflow_x[c] = convx13[c] - convx33[c] + convx12[c] - convx32[c] + convx11[c] - convx31[c];
-            abs_overflow_x[c] = overflow_x[c][12] ? -overflow_x[c] : overflow_x[c];
+            abs_overflow_x[c] = overflow_x[c][12] ? ~(overflow_x[c]) + 1 : overflow_x[c];
             convx[c]   = (abs_overflow_x[c] > 255) ? 255 : abs_overflow_x[c][11:0];
             
             // *** Calculation of the vertical Sobel convolution ***
@@ -95,7 +95,7 @@ generate
             // Combine the values above in a way that faithfully implements Sobel.
             // You may declare more signals as needed.
             overflow_y[c] = convy13[c] - convy11[c] + convy23[c] - convy21[c] + convy33[c] - convy31[c];
-            abs_overflow_y[c] = overflow_y[c][12] ? -overflow_y[c] : overflow_y[c];
+            abs_overflow_y[c] = overflow_y[c][12] ? ~(overflow_x[c]) + 1 : overflow_y[c];
             convy[c]   = (abs_overflow_y[c] > 255) ? 255 : abs_overflow_y[c][11:0];
             
             // *** Calculation of the overall Sobel convolution result ***
