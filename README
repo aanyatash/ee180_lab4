@@ -48,3 +48,12 @@ Buf write en:
 
 - We only ever want to write when in a calculating stage, so we only have write enable high in state processing calc and state processing calc last.
 
+
+In sobel accelerator:
+
+- We perform a convolution based on the methods used in lab 2, so perform an x and y convolution separately using addition and subtraction.
+- We then have to ensure the number isn't negative or too large by doing the following:
+- To determine whether the number is negative, we implement a simple check for the msb as in 2's complement, this but would be 1.
+- We then negate this if the number is negative, so we are effectively taking the absolute value.
+- Finally, we check that this value isn't greater than 255 as we will be outputting the lower 8 bits. We cap the value at 255, if it is greater.
+- To obtain the final sum, we add these 2 x and y values together.
