@@ -294,7 +294,7 @@ always @ (*) begin
         
         STATE_LOADING_1: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            row_op                              = `SOBEL_ROW_OP_HOLD;
+            row_op                              = `SOBEL_ROW_OP_SHIFT_ROW;
         end
         
         STATE_LOADING_2: begin
@@ -564,7 +564,7 @@ end
 // Insert your code where indicated.
 always @ (*) begin
     // What is the correct default behavior? Place your code here.
-    buf_write_offset_next                       = 'h0;
+    buf_write_offset_next                       = buf_write_offset;
     
     case (state)
         STATE_WAIT: begin
