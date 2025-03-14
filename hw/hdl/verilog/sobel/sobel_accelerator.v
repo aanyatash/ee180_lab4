@@ -94,8 +94,7 @@ generate
             
             // Combine the values above in a way that faithfully implements Sobel.
             // You may declare more signals as needed.
-            //overflow_y[c] = convy13[c] - convy11[c] + convy23[c] - convy21[c] + convy33[c] - convy31[c];
-            overflow_y[c] = convy11[c] - convy13[c] + convy21[c] - convy23[c] + convy31[c] - convy33[c];
+            overflow_y[c] = convy13[c] - convy11[c] + convy23[c] - convy21[c] + convy33[c] - convy31[c];
             abs_overflow_y[c] = overflow_y[c][11] ? -overflow_y[c] : overflow_y[c];
             convy[c]   = (abs_overflow_y[c] > 255) ? 255 : abs_overflow_y[c];
             
