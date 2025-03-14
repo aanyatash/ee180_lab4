@@ -1,1 +1,13 @@
-TODO: Write your lab report here. See the handout for more information.
+Names: Aanya Tashfeen and Josue Contreras
+
+Our overall high-level Sobel control state machine is shown below:
+              
+               |------------------------------------------------------------------------------------------------------------------------------------------------ |
+               |                                                                                                                                                 |
+               |                                                           |-----------------------------------------------------------------------|             |(if not at last column)
+               |                                                           |                                                                       |             |
+STATE_WAIT --> STATE LOADING 1 --> STATE LOADING 2 --> STATE LOADING 3 --> STATE PROCESS CALC --> STATE PROCESS LOAD (if not at end of row) -------|             |                (if at last column)
+                                                                                                  OR STATE PROCESS LOAD LAST (if at end of row) -------> STATE PROCESS CALC LAST ----> STATE DONE
+
+
+
