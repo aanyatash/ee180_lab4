@@ -14,10 +14,37 @@ STATE_WAIT --> STATE LOADING 1 --> STATE LOADING 2 --> STATE LOADING 3 --> STATE
 
 This state machine was implemented in the sobel control file to ensure all the rows and columns were loaded in and convoluted on before raising the done signal.
 
-Row register command: This state machine had shift register command sent to the row register every time we were in a load state, to ensure that a new row was loaded in then. For all other states, the hold command was asserted.
+Row register command: 
 
-Row counter circuitry: The row counter was incremented every time we had to move the 3-row sliding window downward, so in this case, this was for the calc state, as we want to process/caculate on a new set of 3 rows every time. We would increment row counter next in the state before, to ensure the correct row value was being operated on in the calc clock cycle. In the calc last processing state, row counter was updated to 0 as here we process new columns and so start from the first row again.
+- This state machine had shift register command sent to the row register every time we were in a load state, to ensure that a new row was loaded in then. 
+- For all other states, the hold command was asserted.
 
-Col strip counter: This circuitry was very simple, as we only wanted to increment the column number when we were in the last calc processing state, so that once it goes back to the load state, it loads in the correct first three rows again, starting from the next column number. We skip over 2 columns every time as we have 2 accelerators and so we use the next col strip wire, which adds 2 to the col_strip we are currently on.
+Row counter circuitry: 
 
-Buf write offset calculation: buf_write_offset tracks the memory address where processed Sobel output is written, incrementing by buf_write_row_incr to store results in the correct output buffer location. We increment this in the load states (using buf_write_row_incr which subtracts 2 from the total number of cols as the output image is 2 cols less wide) because we must write to the row below in the calc stage every time. In state loading 3, we also update the write offset to the column number as we must shift to write to the next column on every full iteration through the input and output image/matrix.
+- The row counter was incremented every time we had to move the 3-row sliding window downward, so in this case, this was for the calc state, as we want to process/calculate on a new set of 3 rows every time. 
+- We would increment row counter next in the state before, to ensure the correct row value was being operated on in the calc clock cycle. 
+- In the calc last processing state, row counter was updated to 0 as here we process new columns and so start from the first row again.
+
+Col strip counter: 
+
+- This circuitry was very simple, as we only wanted to increment the column number when we were in the last calc processing state, so that once it goes back to the load state, it loads in the correct first three rows again, starting from the next column number. 
+- We skip over 2 columns every time as we have 2 accelerators and so we use the next col strip wire, which adds 2 to the col_strip we are currently on.
+
+Buf read offset calculation:
+
+- buf_read_offset keeps track of the memory address from which the next row of image data will be read. 
+- It starts at the beginning of the image buffer and increments by control_n_cols (the image width) to move down one row at a time. 
+- During initialization, it loads the first three rows needed for Sobel processing. 
+- After each processed row, it shifts down to read the next one, ensuring a continuous stream of image data for the accelerator.
+- When moving to a new column strip, in processing load last, buf_read_offset is updated using next_col_strip, which determines the next starting column based on the number of accelerators in use, as it processes this in parallel.
+
+Buf write offset calculation: 
+
+- buf_write_offset tracks the memory address where processed Sobel output is written, incrementing by buf_write_row_incr to store results in the correct output buffer location. 
+- We increment this in the load states (using buf_write_row_incr which subtracts 2 from the total number of cols as the output image is 2 cols less wide) because we must write to the row below in the calc stage every time. 
+- In state loading 3, we also update the write offset to the column number as we must shift to write to the next column on every full iteration through the input and output image/matrix.
+
+Buf write en:
+
+- We only ever want to write when in a calculating stage, so we only have write enable high in state processing calc and state processing calc last.
+
