@@ -294,7 +294,7 @@ always @ (*) begin
         
         STATE_LOADING_1: begin
             // What happens in this state? Insert your code here. If nothing changes, you can remove this case completely.
-            row_op                              = `SOBEL_ROW_OP_SHIFT_ROW;
+            row_op                              = `SOBEL_ROW_OP_HOLD;
         end
         
         STATE_LOADING_2: begin

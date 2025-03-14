@@ -44,11 +44,11 @@ assign      sacc2swt_write_data                 = sobel_out;
 // *** Extra signal declarations ***
 // If you need any extra signals to help with the convolution, declare them here. Otherwise, you may remove these comments.
 // Note that you will need to use "reg" (not "wire") for any signals written to inside the "always" block.
-reg [12:0] overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
-reg [12:0] overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
-reg [12:0] abs_overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
-reg [12:0] abs_overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
-reg [12:0] overflow_sobel[`NUM_SOBEL_ACCELERATORS-1:0]; 
+reg [11:0] overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
+reg [11:0] overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
+reg [11:0] abs_overflow_x[`NUM_SOBEL_ACCELERATORS-1:0];
+reg [11:0] abs_overflow_y[`NUM_SOBEL_ACCELERATORS-1:0]; 
+reg [11:0] overflow_sobel[`NUM_SOBEL_ACCELERATORS-1:0]; 
 
 
 // *** Sobel convolution implementation ***
@@ -79,8 +79,8 @@ generate
             // Combine the values above in a way that faithfully implements Sobel.
             // You may declare more signals as needed.
             overflow_x[c] = convx13[c] - convx33[c] + convx12[c] - convx32[c] + convx11[c] - convx31[c];
-            abs_overflow_x[c] = overflow_x[c][12] ? ~(overflow_x[c]) + 1 : overflow_x[c];
-            convx[c]   = (abs_overflow_x[c] > 255) ? 255 : abs_overflow_x[c][11:0];
+            abs_overflow_x[c] = overflow_x[c][11] ? -overflow_x[c] : overflow_x[c];
+            convx[c]   = (abs_overflow_x[c] > 255) ? 255 : abs_overflow_x[c];
             
             // *** Calculation of the vertical Sobel convolution ***
             // Each "convy" value corresponds to an input to that calculation, a different pixel in the 9-by-9 grid.
@@ -94,14 +94,15 @@ generate
             
             // Combine the values above in a way that faithfully implements Sobel.
             // You may declare more signals as needed.
-            overflow_y[c] = convy13[c] - convy11[c] + convy23[c] - convy21[c] + convy33[c] - convy31[c];
-            abs_overflow_y[c] = overflow_y[c][12] ? ~(overflow_x[c]) + 1 : overflow_y[c];
-            convy[c]   = (abs_overflow_y[c] > 255) ? 255 : abs_overflow_y[c][11:0];
+            //overflow_y[c] = convy13[c] - convy11[c] + convy23[c] - convy21[c] + convy33[c] - convy31[c];
+            overflow_y[c] = convy11[c] - convy13[c] + convy21[c] - convy23[c] + convy31[c] - convy33[c];
+            abs_overflow_y[c] = overflow_y[c][11] ? -overflow_y[c] : overflow_y[c];
+            convy[c]   = (abs_overflow_y[c] > 255) ? 255 : abs_overflow_y[c];
             
             // *** Calculation of the overall Sobel convolution result ***
             // The horizontal and vertical convolutions must be combined in a way that faithfully implements the Sobel convolution algorithm.
             overflow_sobel[c] = (convx[c] + convy[c]) > 255 ? 255 : (convx[c] + convy[c]);
-            sobel_sum[c] = overflow_sobel[c][11:0];
+            sobel_sum[c] = overflow_sobel[c];
             
             // *** Writing out the Sobel convolution result ***
             // This line should place the output of the Sobel convolution (the lines above) into the correct location in the output byte vector.
