@@ -5,9 +5,19 @@ Our overall high-level Sobel control state machine is shown below:
                |------------------------------------------------------------------------------------------------------------------------------------------------ |
                |                                                                                                                                                 |
                |                                                           |-----------------------------------------------------------------------|             |(if not at last column)
-               |                                                           |                                                                       |             |
+               \/                                                          \/                                                                      |             |
 STATE_WAIT --> STATE LOADING 1 --> STATE LOADING 2 --> STATE LOADING 3 --> STATE PROCESS CALC --> STATE PROCESS LOAD (if not at end of row) -------|             |                (if at last column)
                                                                                                   OR STATE PROCESS LOAD LAST (if at end of row) -------> STATE PROCESS CALC LAST ----> STATE DONE
 
 
 
+
+This state machine was implemented in the sobel control file to ensure all the rows and columns were loaded in and convoluted on before raising the done signal.
+
+Row register command: This state machine had shift register command sent to the row register every time we were in a load state, to ensure that a new row was loaded in then. For all other states, the hold command was asserted.
+
+Row counter circuitry: The row counter was incremented every time we had to move the 3-row sliding window downward, so in this case, this was for the calc state, as we want to process/caculate on a new set of 3 rows every time. We would increment row counter next in the state before, to ensure the correct row value was being operated on in the calc clock cycle. In the calc last processing state, row counter was updated to 0 as here we process new columns and so start from the first row again.
+
+Col strip counter: This circuitry was very simple, as we only wanted to increment the column number when we were in the last calc processing state, so that once it goes back to the load state, it loads in the correct first three rows again, starting from the next column number. We skip over 2 columns every time as we have 2 accelerators and so we use the next col strip wire, which adds 2 to the col_strip we are currently on.
+
+Buf write offset calculation: buf_write_offset tracks the memory address where processed Sobel output is written, incrementing by buf_write_row_incr to store results in the correct output buffer location. We increment this in the load states (using buf_write_row_incr which subtracts 2 from the total number of cols as the output image is 2 cols less wide) because we must write to the row below in the calc stage every time. In state loading 3, we also update the write offset to the column number as we must shift to write to the next column on every full iteration through the input and output image/matrix.
